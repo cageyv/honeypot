@@ -15,15 +15,7 @@ builds:
   main: ./cmd/honeypot
   binary: honeypot
   dir: .
-  hooks:
-    pre: |
-      #!/bin/sh
-      # First build
-      go build -o honeypot cmd/honeypot/main.go
-      # Run analysis
-      ./honeypot -build
-      # Clean up
-      rm honeypot
+  
 
 archives:
   - format: binary

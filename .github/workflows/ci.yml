@@ -53,6 +53,12 @@ jobs:
         go-version: '1.24'
         cache: true
 
+    - name: create binary_info.json file 
+      run: |
+        touch cmd/honeypot/binary_info.json
+        echo "{}" > cmd/honeypot/binary_info.json
+        go run cmd/honeypot/main.go -build
+
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v6
 

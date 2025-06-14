@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 )
@@ -40,5 +41,60 @@ func TestMainExitCode(t *testing.T) {
 				t.Errorf("getExitCode() = %v, want %v", code, tt.want)
 			}
 		})
+	}
+}
+
+func TestBinaryReplacement(t *testing.T) {
+	// Create temp dir for test
+	tmpDir, err := os.MkdirTemp("", "honeypot-test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Change to temp dir
+	oldDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get current dir: %v", err)
+	}
+	defer os.Chdir(oldDir)
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("Failed to change dir: %v", err)
+	}
+
+	// Create test honeypot binary
+	testBin := filepath.Join(tmpDir, "honeypot")
+	if err := os.WriteFile(testBin, []byte("test"), 0755); err != nil {
+		t.Fatalf("Failed to create test binary: %v", err)
+	}
+
+	// Test replacement creation
+	os.Args = []string{"honeypot", "-replace"}
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	replaceMode = flag.Bool("replace", false, "Replace mode")
+	flag.Parse()
+
+	if err := createBinaryReplacements(); err != nil {
+		t.Errorf("createBinaryReplacements() error = %v", err)
+	}
+
+	// Verify replacements exist
+	for _, bin := range []string{"ls", "cat", "sh"} {
+		if _, err := os.Stat(bin); err != nil {
+			t.Errorf("Replacement for %s not created: %v", bin, err)
+		}
+	}
+}
+
+func TestBinaryEmulation(t *testing.T) {
+	// Test running as replacement binary
+	os.Args = []string{"cat"}
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	targetBinary = flag.String("target", "", "Target binary")
+	flag.Parse()
+
+	// Verify target is set correctly
+	if *targetBinary != "cat" {
+		t.Errorf("targetBinary = %v, want cat", *targetBinary)
 	}
 }

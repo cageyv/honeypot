@@ -101,7 +101,7 @@ func TestBinaryEmulation(t *testing.T) {
 	// Test running as replacement binary
 	os.Args = []string{"cat"}
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	targetBinary = flag.String("target", "", "Target binary")
+	targetBinary = flag.String("target", "cat", "Target binary")
 	flag.Parse()
 
 	// Verify target is set correctly

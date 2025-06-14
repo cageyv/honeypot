@@ -79,7 +79,9 @@ func analyzeBinary(path string) (BinaryInfo, error) {
 
 	start := time.Now()
 	cmd := exec.Command(path)
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		log.Printf("Warning: Failed to run binary %s: %v", path, err)
+	}
 	info.ExecTime = time.Since(start)
 
 	return info, nil
@@ -138,7 +140,9 @@ func emulateBinary() {
 
 	// Emulate size
 	dummy := make([]byte, info.Size)
-	os.WriteFile("/tmp/honeypot_dummy", dummy, 0755)
+	if err := os.WriteFile("/tmp/honeypot_dummy", dummy, 0755); err != nil {
+		log.Printf("Warning: Failed to write dummy file: %v", err)
+	}
 	defer os.Remove("/tmp/honeypot_dummy")
 
 	// Emulate execution time

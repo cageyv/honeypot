@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -13,7 +14,9 @@ func TestMain(m *testing.M) {
 	// Create empty binary_info.json for tests
 	emptyCache := make(map[string]BinaryInfo)
 	data, _ := json.Marshal(emptyCache)
-	os.WriteFile("binary_info.json", data, 0644)
+	if err := os.WriteFile("binary_info.json", data, 0644); err != nil {
+		log.Printf("Warning: Failed to write binary_info.json: %v", err)
+	}
 	defer os.Remove("binary_info.json")
 
 	os.Exit(m.Run())
@@ -68,7 +71,11 @@ func TestBinaryReplacement(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get current dir: %v", err)
 	}
-	defer os.Chdir(oldDir)
+	defer func() {
+		if err := os.Chdir(oldDir); err != nil {
+			t.Errorf("Failed to restore dir: %v", err)
+		}
+	}()
 	if err := os.Chdir(tmpDir); err != nil {
 		t.Fatalf("Failed to change dir: %v", err)
 	}

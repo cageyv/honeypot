@@ -1,12 +1,23 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"os"
 	"path/filepath"
 	"strconv"
 	"testing"
 )
+
+func TestMain(m *testing.M) {
+	// Create empty binary_info.json for tests
+	emptyCache := make(map[string]BinaryInfo)
+	data, _ := json.Marshal(emptyCache)
+	os.WriteFile("binary_info.json", data, 0644)
+	defer os.Remove("binary_info.json")
+
+	os.Exit(m.Run())
+}
 
 func TestMainExitCode(t *testing.T) {
 	tests := []struct {

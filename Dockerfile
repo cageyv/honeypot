@@ -1,7 +1,10 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /build
 COPY . .
+
+# Download dependencies
+RUN go mod download
 
 # First build
 RUN go build -o honeypot ./cmd/honeypot
